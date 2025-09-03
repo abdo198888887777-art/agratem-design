@@ -20,7 +20,7 @@ interface PricingCalculation {
 
 interface SimplifiedPricingCalculatorProps {
   onClose: () => void
-  selectedBillboards?: string[] // ��عرفات اللوحات المختارة
+  selectedBillboards?: string[] // معرفات اللوحات المختارة
   allBillboards?: Billboard[] // جميع اللوحات للمراجعة
 }
 
@@ -111,7 +111,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       let breakdown: string[] = []
 
       // Determine duration in days for Arabic pricing table
-      const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
+      const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 60 ? 60 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
 
       if (pricingMode === 'daily') {
         // Use Arabic pricing (يوم واحد) as daily base, multiply by days count
@@ -253,7 +253,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         if (selectedCustomerType === 'companies') {
           const discount = Math.round(finalPrice * 0.05)
           finalPrice -= discount
-          breakdown.push(`خصم الشركات (5%): -${discount.toLocaleString()} د.ل`)
+          breakdown.push(`خ��م الشركات (5%): -${discount.toLocaleString()} د.ل`)
         } else if (selectedCustomerType === 'marketers') {
           const discount = Math.round(finalPrice * 0.15)
           finalPrice -= discount
@@ -389,7 +389,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         <div>AL FARES AL DAHABI</div>
       </div>
 
-      <div class="quote-title">${isMultiple ? 'عرض سعر ح��لة إعلانية' : 'عرض سعر لوحة إعلانية'}</div>
+      <div class="quote-title">${isMultiple ? 'عرض سعر حملة إعلانية' : 'عرض سعر لوحة إعلانية'}</div>
       <div>التاريخ: ${data.date}</div>
 
       <div class="section">
@@ -447,7 +447,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         </div>
       ` : `
         <div class="section">
-          <div class="section-title">تفاصيل اللوحة</div>
+          <div class="section-title">تفاصيل الل��حة</div>
           <div class="info-row"><span>المقاس:</span><span>${data.billing.billboard.size}</span></div>
           <div class="info-row"><span>المستوى:</span><span>${data.billing.billboard.level}</span></div>
           <div class="info-row"><span>البلدية:</span><span>${data.billing.billboard.municipality}</span></div>
@@ -585,7 +585,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </div>
                   <div>
                     <div className="font-bold">{selectedBillboardsData.filter(b => b.status === 'متاح').length}</div>
-                    <div>لوحة متا��ة</div>
+                    <div>لوحة متاحة</div>
                   </div>
                 </div>
                 <div className="text-sm text-blue-800 text-center border-t border-blue-200 pt-2">
@@ -669,7 +669,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   >
                     <div className="text-center">
                       <Building2 className="w-6 h-6 mx-auto mb-2" />
-                      <div className="font-bold">باق��</div>
+                      <div className="font-bold">باقة</div>
                       <div className="text-xs opacity-75">أسعار الباقات الثابتة</div>
                     </div>
                   </Button>
@@ -1022,7 +1022,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         'bg-purple-100 text-purple-800'
                       }>
                         {selectedCustomerType === 'individuals' ? 'فرد' :
-                         selectedCustomerType === 'companies' ? 'شركة' : 'مسوق'}
+                         selectedCustomerType === 'companies' ? '��ركة' : 'مسوق'}
                       </Badge>
                     </div>
                     <div className="flex justify-between">
