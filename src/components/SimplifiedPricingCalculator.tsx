@@ -618,7 +618,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     >
                       <div className="text-center">
                         <List className="w-6 h-6 mx-auto mb-2" />
-                        <div className="font-bold">اللوحات المختارة</div>
+                        <div className="font-bold">اللو��ات المختارة</div>
                         <div className="text-xs opacity-75">{selectedBillboardsData.length} لوحة</div>
                       </div>
                     </Button>
@@ -882,7 +882,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                               </div>
                               <div>
                                 <div className="font-semibold text-gray-900 text-sm">{billboard.name}</div>
-                                <div className="text-xs text-gray-600">{billboard.size} • {billboard.municipality}</div>
+                                <div className="text-xs text-gray-600">{billboard.size} • {billboard.municipality} • مستوى {billboard.level}</div>
                               </div>
                             </div>
                             <div className="text-right">
@@ -890,6 +890,17 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                               <div className="text-xs text-blue-600">يومي: {formatPrice(calculation.dailyRate)}</div>
                             </div>
                           </div>
+                          {needInstallation && (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <div className="text-xs text-gray-600">سعر التركيب (لهذه اللوحة):</div>
+                              <Input
+                                type="number"
+                                value={installationCosts[billboard.id] ?? 0}
+                                onChange={(e) => setInstallationCosts(prev => ({ ...prev, [billboard.id]: parseInt(e.target.value) || 0 }))}
+                                min={0}
+                              />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
