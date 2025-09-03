@@ -139,8 +139,11 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       let dailyRate = basePrice
 
       if (pricingMode === 'daily') {
-        finalPrice = basePrice * daysCount
-        breakdown.push(`إجمالي ${daysCount} أيام: ${finalPrice.toLocaleString()} د.ل`)
+        const sd = startDate ? new Date(startDate) : null
+        const ed = endDate ? new Date(endDate) : null
+        const numDays = (sd && ed) ? Math.max(Math.ceil((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0) : 0
+        finalPrice = basePrice * numDays
+        breakdown.push(`إجمالي ${numDays} أيام: ${finalPrice.toLocaleString()} د.ل`)
         dailyRate = basePrice
       } else {
         dailyRate = basePrice > 0 ? basePrice / daysInPackage : 0
@@ -240,7 +243,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         if (needInstallation && installationCost > 0) {
           totalInstallationCost = installationCost
           finalPrice += totalInstallationCost
-          breakdown.push(`تكلفة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
+          breakdown.push(`تك��فة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
         }
 
         // Apply customer discount
@@ -397,7 +400,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       ${isMultiple ? `
         <div class="section">
           <div class="section-title">تفاصيل الحملة الإعلانية</div>
-          <div class="info-row"><span>عدد ��للوحات:</span><span>${data.billing.billboards.length} لوحة</span></div>
+          <div class="info-row"><span>عدد اللوحات:</span><span>${data.billing.billboards.length} لوحة</span></div>
           <div class="info-row"><span>نوع التسعير:</span><span>${data.pricing.mode === 'daily' ? 'يومي' : 'باقة'}</span></div>
           ${data.pricing.days ? `<div class="info-row"><span>عدد الأيام:</span><span>${data.pricing.days} يوم</span></div>` : ''}
           ${data.pricing.package ? `<div class="info-row"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
@@ -768,7 +771,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         <option value={60}>2 أشهر</option>
                         <option value={90}>3 أشهر</option>
                         <option value={180}>6 أشهر</option>
-                        <option value={365}>سنة كاملة</option>
+                        <option value={365}>سنة كام��ة</option>
                       </select>
                     </div>
                     <div>
@@ -945,7 +948,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </div>
 
                   <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white p-6 rounded-xl text-center">
-                    <div className="text-sm opacity-90 mb-2">السعر ��لنهائي</div>
+                    <div className="text-sm opacity-90 mb-2">السعر النهائي</div>
                     <div className="text-3xl font-black">{formatPrice(calculation.finalPrice)}</div>
                     <div className="text-sm opacity-90 mt-2">
                       السعر اليومي: {formatPrice(calculation.dailyRate)}
