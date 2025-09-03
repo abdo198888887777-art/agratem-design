@@ -1080,7 +1080,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-3"
                   >
                     <FileText className="w-5 h-5 ml-2" />
-                    {calculationMode === 'multiple' ? 'إنشاء عرض حملة إعلانية' : 'إنشاء عرض سعر'}
+                    {calculationMode === 'multiple' ? 'إنشاء عرض حملة ��علانية' : 'إنشاء عرض سعر'}
                   </Button>
                   <Button
                     onClick={() => {
@@ -1096,7 +1096,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         total: totalCalculation,
                         customerType: selectedCustomerType,
                         pricingMode: pricingMode,
-                        days: pricingMode === 'daily' ? daysCount : undefined,
+                        days: pricingMode === 'daily' ? (startDate && endDate ? Math.max(Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000*60*60*24)) + 1, 0) : 0) : undefined,
                         package: pricingMode === 'package' ? packageDuration : undefined
                       } : {
                         mode: 'single',
