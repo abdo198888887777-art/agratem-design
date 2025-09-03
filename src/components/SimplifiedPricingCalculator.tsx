@@ -206,7 +206,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         let basePrice = 0
         let breakdown: string[] = []
 
-        const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
+        const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 60 ? 60 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
 
         if (pricingMode === 'daily') {
           basePrice = await arabicPricingService.getPrice(
@@ -253,7 +253,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         if (selectedCustomerType === 'companies') {
           const discount = Math.round(finalPrice * 0.05)
           finalPrice -= discount
-          breakdown.push(`خ��م الشركات (5%): -${discount.toLocaleString()} د.ل`)
+          breakdown.push(`خصم الشركات (5%): -${discount.toLocaleString()} د.ل`)
         } else if (selectedCustomerType === 'marketers') {
           const discount = Math.round(finalPrice * 0.15)
           finalPrice -= discount
@@ -447,7 +447,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         </div>
       ` : `
         <div class="section">
-          <div class="section-title">تفاصيل الل��حة</div>
+          <div class="section-title">تفاصيل اللوحة</div>
           <div class="info-row"><span>المقاس:</span><span>${data.billing.billboard.size}</span></div>
           <div class="info-row"><span>المستوى:</span><span>${data.billing.billboard.level}</span></div>
           <div class="info-row"><span>البلدية:</span><span>${data.billing.billboard.municipality}</span></div>
@@ -1022,7 +1022,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         'bg-purple-100 text-purple-800'
                       }>
                         {selectedCustomerType === 'individuals' ? 'فرد' :
-                         selectedCustomerType === 'companies' ? '��ركة' : 'مسوق'}
+                         selectedCustomerType === 'companies' ? 'شركة' : 'مسوق'}
                       </Badge>
                     </div>
                     <div className="flex justify-between">
