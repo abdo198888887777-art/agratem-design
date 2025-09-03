@@ -443,7 +443,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
           <div class="info-row"><span>المقاس:</span><span>${data.billing.billboard.size}</span></div>
           <div class="info-row"><span>المستوى:</span><span>${data.billing.billboard.level}</span></div>
           <div class="info-row"><span>البلدية:</span><span>${data.billing.billboard.municipality}</span></div>
-          <div class="info-row"><span>نوع العميل:</span><span>${
+          <div class="info-row"><span>نوع ال��ميل:</span><span>${
             data.billing.billboard.customerType === 'individuals' ? 'فرد' :
             data.billing.billboard.customerType === 'companies' ? 'شركة' : 'مسوق'
           }</span></div>
@@ -629,7 +629,8 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </div>
                 </Card>
               )}
-              {/* Pricing Mode Selection */}
+              {/* Pricing Mode Selection (single mode only) */}
+              {calculationMode === 'single' && (
               <Card className="p-4">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-emerald-600" />
@@ -666,6 +667,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </Button>
                 </div>
               </Card>
+              )}
 
               {/* Billboard Specifications */}
               <Card className="p-4">
@@ -947,7 +949,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
               <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
                 <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  ملخص العرض
+                  م��خص العرض
                 </h3>
                 <div className="space-y-2 text-sm">
                   {calculationMode === 'multiple' ? (
