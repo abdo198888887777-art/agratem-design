@@ -157,7 +157,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       } else if (selectedCustomerType === 'marketers') {
         const discount = Math.round(finalPrice * 0.15) // 15% discount for marketers
         finalPrice -= discount
-        breakdown.push(`خصم المسوقين (15%): -${discount.toLocaleString()} د.ل`)
+        breakdown.push(`خصم المسوقي�� (15%): -${discount.toLocaleString()} د.ل`)
       }
 
       breakdown.push(`السعر النهائي: ${finalPrice.toLocaleString()} د.ل`)
@@ -351,7 +351,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     <html dir="rtl" lang="ar">
     <head>
       <meta charset="UTF-8">
-      <title>عرض سعر - الفارس الذهب��</title>
+      <title>عرض سعر - الفارس الذهبي</title>
       <style>
         @page { size: A4; margin: 20mm; }
         body { font-family: 'Arial', sans-serif; direction: rtl; line-height: 1.6; }
@@ -392,10 +392,6 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         <div class="section">
           <div class="section-title">تفاصيل الحملة الإعلانية</div>
           <div class="info-row"><span>عدد اللوحات:</span><span>${data.billing.billboards.length} لوحة</span></div>
-          <div class="info-row"><span>نوع العميل:</span><span>${
-            data.pricing.customerType === 'individuals' ? 'فرد' :
-            data.pricing.customerType === 'companies' ? 'شركة' : 'مسوق'
-          }</span></div>
           <div class="info-row"><span>نوع التسعير:</span><span>${data.pricing.mode === 'daily' ? 'يومي' : 'باقة'}</span></div>
           ${data.pricing.days ? `<div class="info-row"><span>عدد الأيام:</span><span>${data.pricing.days} يوم</span></div>` : ''}
           ${data.pricing.package ? `<div class="info-row"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
