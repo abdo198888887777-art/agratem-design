@@ -103,7 +103,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     } else {
       calculateMultipleBillboards()
     }
-  }, [selectedSize, selectedLevel, selectedMunicipality, selectedCustomerType, pricingMode, daysCount, packageDuration, installationCost, needInstallation, calculationMode, selectedBillboardsData])
+  }, [selectedSize, selectedLevel, selectedMunicipality, selectedCustomerType, pricingMode, startDate, endDate, packageStartDate, packageDuration, installationCost, installationCosts, needInstallation, calculationMode, selectedBillboardsData])
 
   const calculatePricing = async () => {
     try {
@@ -397,7 +397,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       ${isMultiple ? `
         <div class="section">
           <div class="section-title">تفاصيل الحملة الإعلانية</div>
-          <div class="info-row"><span>عدد اللوحات:</span><span>${data.billing.billboards.length} لوحة</span></div>
+          <div class="info-row"><span>عدد ��للوحات:</span><span>${data.billing.billboards.length} لوحة</span></div>
           <div class="info-row"><span>نوع التسعير:</span><span>${data.pricing.mode === 'daily' ? 'يومي' : 'باقة'}</span></div>
           ${data.pricing.days ? `<div class="info-row"><span>عدد الأيام:</span><span>${data.pricing.days} يوم</span></div>` : ''}
           ${data.pricing.package ? `<div class="info-row"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
@@ -945,7 +945,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </div>
 
                   <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white p-6 rounded-xl text-center">
-                    <div className="text-sm opacity-90 mb-2">السعر النهائي</div>
+                    <div className="text-sm opacity-90 mb-2">السعر ��لنهائي</div>
                     <div className="text-3xl font-black">{formatPrice(calculation.finalPrice)}</div>
                     <div className="text-sm opacity-90 mt-2">
                       السعر اليومي: {formatPrice(calculation.dailyRate)}
