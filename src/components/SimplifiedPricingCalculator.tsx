@@ -1057,10 +1057,17 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     </>
                   )}
                   {pricingMode === 'daily' && (
-                    <div className="flex justify-between">
-                      <span>عدد الأيام:</span>
-                      <Badge variant="outline">{daysCount} يوم</Badge>
-                    </div>
+                    (() => {
+                      const sd = startDate ? new Date(startDate) : null
+                      const ed = endDate ? new Date(endDate) : null
+                      const numDays = (sd && ed) ? Math.max(Math.ceil((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0) : 0
+                      return (
+                        <div className="flex justify-between">
+                          <span>عدد الأيام:</span>
+                          <Badge variant="outline">{numDays} يوم</Badge>
+                        </div>
+                      )
+                    })()
                   )}
                   {pricingMode === 'package' && (
                     <div className="flex justify-between">
