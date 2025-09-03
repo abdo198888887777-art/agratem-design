@@ -20,7 +20,7 @@ interface PricingCalculation {
 
 interface SimplifiedPricingCalculatorProps {
   onClose: () => void
-  selectedBillboards?: string[] // معرفات اللوحات المختارة
+  selectedBillboards?: string[] // ��عرفات اللوحات المختارة
   allBillboards?: Billboard[] // جميع اللوحات للمراجعة
 }
 
@@ -230,8 +230,11 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         let dailyRate = basePrice
 
         if (pricingMode === 'daily') {
-          finalPrice = basePrice * daysCount
-          breakdown.push(`إجمالي ${daysCount} أيام: ${finalPrice.toLocaleString()} د.ل`)
+          const sd = startDate ? new Date(startDate) : null
+          const ed = endDate ? new Date(endDate) : null
+          const numDays = (sd && ed) ? Math.max(Math.ceil((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0) : 0
+          finalPrice = basePrice * numDays
+          breakdown.push(`إجمالي ${numDays} أيام: ${finalPrice.toLocaleString()} د.ل`)
           dailyRate = basePrice
         } else {
           dailyRate = basePrice > 0 ? basePrice / daysInPackage : 0
@@ -243,7 +246,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         if (needInstallation && installationCost > 0) {
           totalInstallationCost = installationCost
           finalPrice += totalInstallationCost
-          breakdown.push(`تك��فة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
+          breakdown.push(`تكلفة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
         }
 
         // Apply customer discount
@@ -386,7 +389,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         <div>AL FARES AL DAHABI</div>
       </div>
 
-      <div class="quote-title">${isMultiple ? 'عرض سعر حملة إعلانية' : 'عرض سعر لوحة إعلانية'}</div>
+      <div class="quote-title">${isMultiple ? 'عرض سعر ح��لة إعلانية' : 'عرض سعر لوحة إعلانية'}</div>
       <div>التاريخ: ${data.date}</div>
 
       <div class="section">
@@ -582,7 +585,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </div>
                   <div>
                     <div className="font-bold">{selectedBillboardsData.filter(b => b.status === 'متاح').length}</div>
-                    <div>لوحة متاحة</div>
+                    <div>لوحة متا��ة</div>
                   </div>
                 </div>
                 <div className="text-sm text-blue-800 text-center border-t border-blue-200 pt-2">
@@ -666,7 +669,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   >
                     <div className="text-center">
                       <Building2 className="w-6 h-6 mx-auto mb-2" />
-                      <div className="font-bold">باقة</div>
+                      <div className="font-bold">باق��</div>
                       <div className="text-xs opacity-75">أسعار الباقات الثابتة</div>
                     </div>
                   </Button>
@@ -771,7 +774,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         <option value={60}>2 أشهر</option>
                         <option value={90}>3 أشهر</option>
                         <option value={180}>6 أشهر</option>
-                        <option value={365}>سنة كام��ة</option>
+                        <option value={365}>سنة كاملة</option>
                       </select>
                     </div>
                     <div>
