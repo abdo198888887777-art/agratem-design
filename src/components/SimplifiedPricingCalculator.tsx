@@ -77,6 +77,9 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       const selectedData = allBillboards.filter(billboard => selectedBillboards.includes(billboard.id))
       setSelectedBillboardsData(selectedData)
       setCalculationMode('multiple')
+      // في وضع اللوحات المختارة، اجعل العميل يحدد المدة فقط
+      setPricingMode('package')
+      setSelectedCustomerType('individuals')
 
       // Set default municipality from first selected billboard
       if (selectedData.length > 0) {
@@ -498,7 +501,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
               size="sm"
               className="bg-white/20 border-white/30 text-white hover:bg-white/30"
             >
-              إغلاق
+              إ��لاق
             </Button>
           </div>
         </div>
@@ -620,7 +623,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       <div className="text-center">
                         <Calculator className="w-6 h-6 mx-auto mb-2" />
                         <div className="font-bold">حساب منفرد</div>
-                        <div className="text-xs opacity-75">لوحة واحدة</div>
+                        <div className="text-xs opacity-75">لو��ة واحدة</div>
                       </div>
                     </Button>
                   </div>
@@ -884,7 +887,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
-                        <span className="text-gray-700">عدد اللوحات</span>
+                        <span className="text-gray-700">��دد اللوحات</span>
                         <span className="font-bold text-emerald-700">{totalCalculation.count} لوحة</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
@@ -1079,7 +1082,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     className="w-full"
                   >
                     <Download className="w-5 h-5 ml-2" />
-                    نسخ البيانات
+                    نسخ ا��بيانات
                   </Button>
                 </div>
               </Card>
