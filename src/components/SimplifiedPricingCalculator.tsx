@@ -20,7 +20,7 @@ interface PricingCalculation {
 
 interface SimplifiedPricingCalculatorProps {
   onClose: () => void
-  selectedBillboards?: string[] // معرفات ا��لوحات المختارة
+  selectedBillboards?: string[] // معرفات اللوحات المختارة
   allBillboards?: Billboard[] // جميع اللوحات للمراجعة
 }
 
@@ -212,7 +212,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
             selectedCustomerType,
             1
           )
-          breakdown.push(`السعر الأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
+          breakdown.push(`السعر ��لأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
         } else {
           basePrice = await arabicPricingService.getPrice(
             size,
@@ -592,7 +592,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Panel - Inputs */}
             <div className="space-y-6">
-              {/* نمط ا��حساب */}
+              {/* نمط الحساب */}
               {selectedBillboardsData.length > 0 && (
                 <Card className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
                   <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
@@ -745,29 +745,36 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   المدة الزمنية
                 </h3>
                 {pricingMode === 'daily' ? (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">عدد الأيام</label>
-                    <Input
-                      type="number"
-                      value={daysCount}
-                      onChange={(e) => setDaysCount(parseInt(e.target.value) || 1)}
-                      min="1"
-                      className="w-full"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ البداية</label>
+                      <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ النهاية</label>
+                      <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                    </div>
                   </div>
                 ) : (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">نوع الباقة</label>
-                    <select
-                      value={packageDuration}
-                      onChange={(e) => setPackageDuration(parseInt(e.target.value))}
-                      className="w-full p-2 border border-gray-300 rounded-lg"
-                    >
-                      <option value={30}>شهر واحد</option>
-                      <option value={90}>3 أشهر</option>
-                      <option value={180}>6 أشهر</option>
-                      <option value={365}>سنة كاملة</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">نوع الباقة</label>
+                      <select
+                        value={packageDuration}
+                        onChange={(e) => setPackageDuration(parseInt(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value={30}>شهر واحد</option>
+                        <option value={60}>2 أشهر</option>
+                        <option value={90}>3 أشهر</option>
+                        <option value={180}>6 أشهر</option>
+                        <option value={365}>سنة كاملة</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ البدء</label>
+                      <Input type="date" value={packageStartDate} onChange={(e) => setPackageStartDate(e.target.value)} />
+                    </div>
                   </div>
                 )}
               </Card>
@@ -886,7 +893,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       <div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center">
                         <Calculator className="w-6 h-6 text-white" />
                       </div>
-                      الإجمالي النهائي
+                      الإجمالي ا��نهائي
                     </h3>
 
                     <div className="space-y-3 mb-6">
@@ -957,7 +964,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   {calculationMode === 'multiple' ? (
                     <>
                       <div className="flex justify-between">
-                        <span>عدد اللوحات:</span>
+                        <span>عدد الل��حات:</span>
                         <Badge variant="outline" className="bg-blue-100 text-blue-800">
                           {selectedBillboardsData.length} ��وحة
                         </Badge>
