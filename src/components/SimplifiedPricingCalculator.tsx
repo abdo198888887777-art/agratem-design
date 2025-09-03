@@ -20,7 +20,7 @@ interface PricingCalculation {
 
 interface SimplifiedPricingCalculatorProps {
   onClose: () => void
-  selectedBillboards?: string[] // معرفات اللوحات المختارة
+  selectedBillboards?: string[] // معرفات ا��لوحات المختارة
   allBillboards?: Billboard[] // جميع اللوحات للمراجعة
 }
 
@@ -35,9 +35,15 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
   const [selectedMunicipality, setSelectedMunicipality] = useState<string>('مصراتة')
   const [selectedCustomerType, setSelectedCustomerType] = useState<CustomerType>('individuals')
   const [pricingMode, setPricingMode] = useState<'daily' | 'package'>('daily')
-  const [daysCount, setDaysCount] = useState<number>(1)
+  // Daily mode dates
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  // Package mode start date and duration
+  const [packageStartDate, setPackageStartDate] = useState<string>('')
   const [packageDuration, setPackageDuration] = useState<number>(30)
+  // Installation
   const [installationCost, setInstallationCost] = useState<number>(0)
+  const [installationCosts, setInstallationCosts] = useState<Record<string, number>>({})
   const [needInstallation, setNeedInstallation] = useState<boolean>(false)
   
   // Customer information for quote
@@ -586,7 +592,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Panel - Inputs */}
             <div className="space-y-6">
-              {/* نمط الحساب */}
+              {/* نمط ا��حساب */}
               {selectedBillboardsData.length > 0 && (
                 <Card className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
                   <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
