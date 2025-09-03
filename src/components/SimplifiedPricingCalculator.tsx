@@ -351,7 +351,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     <html dir="rtl" lang="ar">
     <head>
       <meta charset="UTF-8">
-      <title>عرض سعر - الفارس الذهبي</title>
+      <title>عرض سعر - الفارس الذهب��</title>
       <style>
         @page { size: A4; margin: 20mm; }
         body { font-family: 'Arial', sans-serif; direction: rtl; line-height: 1.6; }
@@ -997,21 +997,25 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       </div>
                     </>
                   )}
-                  <div className="flex justify-between">
-                    <span>نوع العميل:</span>
-                    <Badge variant="outline" className={
-                      selectedCustomerType === 'companies' ? 'bg-green-100 text-green-800' :
-                      selectedCustomerType === 'marketers' ? 'bg-blue-100 text-blue-800' :
-                      'bg-purple-100 text-purple-800'
-                    }>
-                      {selectedCustomerType === 'individuals' ? 'فرد' :
-                       selectedCustomerType === 'companies' ? 'شركة' : 'مسوق'}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>نوع التسعير:</span>
-                    <Badge variant="outline">{pricingMode === 'daily' ? 'يومي' : 'باقة'}</Badge>
-                  </div>
+                  {calculationMode === 'single' && (
+                    <>
+                    <div className="flex justify-between">
+                      <span>نوع العميل:</span>
+                      <Badge variant="outline" className={
+                        selectedCustomerType === 'companies' ? 'bg-green-100 text-green-800' :
+                        selectedCustomerType === 'marketers' ? 'bg-blue-100 text-blue-800' :
+                        'bg-purple-100 text-purple-800'
+                      }>
+                        {selectedCustomerType === 'individuals' ? 'فرد' :
+                         selectedCustomerType === 'companies' ? 'شركة' : 'مسوق'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>نوع التسعير:</span>
+                      <Badge variant="outline">{pricingMode === 'daily' ? 'يومي' : 'باقة'}</Badge>
+                    </div>
+                    </>
+                  )}
                   {pricingMode === 'daily' && (
                     <div className="flex justify-between">
                       <span>عدد الأيام:</span>
