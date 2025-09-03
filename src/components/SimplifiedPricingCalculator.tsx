@@ -305,7 +305,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
   const generateQuote = () => {
     if (!customerInfo.name) {
-      alert('يرجى ملء معلوما�� العميل لإنشاء عرض السعر')
+      alert('يرجى ملء معلومات العميل لإنشاء عرض السعر')
       return
     }
 
@@ -387,7 +387,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     </head>
     <body>
       <div class="header">
-        <div class="company-name">الفا��س الذهبي للدعاية والإعلان</div>
+        <div class="company-name">الفا��س الذهبي للد��اية والإعلان</div>
         <div>AL FARES AL DAHABI</div>
       </div>
 
@@ -443,7 +443,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     data.pricing.customerType === 'companies' ? 'شركة' : 'مسوق'
                   }</td>
                   <td>${data.pricing.mode === 'daily' ? (data.pricing.days ? data.pricing.days + ' يوم' : '-') : (data.pricing.package ? data.pricing.package + ' يوم' : '-')}</td>
-                  <td>${item.calculation.installationCost ? '${formatPrice(item.calculation.installationCost)}' : '-'}</td>
+                  <td>${item.calculation.installationCost ? formatPrice(item.calculation.installationCost) : '-'}</td>
                   <td class="billboard-price">${formatPrice(item.calculation.finalPrice)}</td>
                 </tr>
               `).join('')}
@@ -538,7 +538,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                 </div>
                 <h3 className="text-xl font-bold text-yellow-900 mb-2">لا توجد لوحات مختارة</h3>
                 <p className="text-yellow-800 mb-4">
-                  لاستخدام هذه الميزة، يرجى اختيار لوحا�� من الصفحة الرئيسية أولاً، ثم الضغط على "حساب الأسعار"
+                  لاستخدام هذه الميزة، يرجى اختيار لوحات من الصفحة الرئيسية أولاً، ثم الضغط على "حساب الأسعار"
                 </p>
                 <Button
                   onClick={() => setCalculationMode('single')}
