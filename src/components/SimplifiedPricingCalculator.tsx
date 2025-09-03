@@ -96,48 +96,45 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     }
   }, [selectedSize, selectedLevel, selectedMunicipality, selectedCustomerType, pricingMode, daysCount, packageDuration, installationCost, needInstallation, calculationMode, selectedBillboardsData])
 
-  const calculatePricing = () => {
+  const calculatePricing = async () => {
     try {
-      const pricing = newPricingService.getPricing()
-      const zone = pricing.zones[selectedMunicipality]
-      
-      if (!zone) {
-        console.warn(`المنطقة "${selectedMunicipality}" غير موجودة`)
-        return
-      }
-
       let basePrice = 0
       let breakdown: string[] = []
 
-      // Get base price based on customer type and level
+      // Determine duration in days for Arabic pricing table
+      const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
+
       if (pricingMode === 'daily') {
-        // For daily pricing, use the customer type pricing
-        const customerPricing = zone.prices[selectedCustomerType]
-        basePrice = customerPricing?.[selectedSize] || 0
+        // Use Arabic pricing (يوم واحد) as daily base, multiply by days count
+        basePrice = await arabicPricingService.getPrice(
+          selectedSize,
+          selectedLevel,
+          selectedCustomerType,
+          1
+        )
         breakdown.push(`السعر الأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
       } else {
-        // For package pricing, use AB pricing system
-        const abPricing = zone.abPrices?.[selectedLevel]
-        basePrice = abPricing?.[selectedSize] || 0
-        breakdown.push(`سعر الباقة الأساسي (مستوى ${selectedLevel}): ${basePrice.toLocaleString()} د.ل`)
+        // Use Arabic pricing for the selected package duration
+        basePrice = await arabicPricingService.getPrice(
+          selectedSize,
+          selectedLevel,
+          selectedCustomerType,
+          daysInPackage
+        )
+        breakdown.push(`سعر الباقة الأساسي (مستوى ${selectedLevel} • ${daysInPackage} يوم): ${basePrice.toLocaleString()} د.ل`)
       }
 
-      // Apply municipality multiplier if available
-      const municipalityMultiplier = 1.0 // Default multiplier
-      // Note: Municipality multipliers are handled within the pricing zones now
-      
+      const municipalityMultiplier = 1.0
+
       let finalPrice = basePrice
       let dailyRate = basePrice
 
       if (pricingMode === 'daily') {
-        // For daily pricing, multiply by number of days
         finalPrice = basePrice * daysCount
         breakdown.push(`إجمالي ${daysCount} أيام: ${finalPrice.toLocaleString()} د.ل`)
         dailyRate = basePrice
       } else {
-        // For package pricing, calculate daily rate
-        const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
-        dailyRate = finalPrice / daysInPackage
+        dailyRate = basePrice > 0 ? basePrice / daysInPackage : 0
         breakdown.push(`السعر اليومي للباقة: ${dailyRate.toFixed(2)} د.ل`)
       }
 
@@ -177,7 +174,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     }
   }
 
-  const calculateMultipleBillboards = () => {
+  const calculateMultipleBillboards = async () => {
     try {
       const calculations: Array<{billboard: Billboard, calculation: PricingCalculation}> = []
       let totalPrice = 0
@@ -189,31 +186,32 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         return
       }
 
-      selectedBillboardsData.forEach(billboard => {
+      for (const billboard of selectedBillboardsData) {
         const size = billboard.size as BillboardSize
         const municipality = billboard.municipality || selectedMunicipality
         const level = billboard.level === 'A' ? 'A' : 'B' as PriceListType
 
-        const pricing = newPricingService.getPricing()
-        const zone = pricing.zones[municipality]
-
-        if (!zone) {
-          console.warn(`المنطقة "${municipality}" غير موجودة`)
-          return
-        }
-
         let basePrice = 0
         let breakdown: string[] = []
 
-        // Get base price based on customer type and level
+        const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
+
         if (pricingMode === 'daily') {
-          const customerPricing = zone.prices[selectedCustomerType]
-          basePrice = customerPricing?.[size] || 0
+          basePrice = await arabicPricingService.getPrice(
+            size,
+            level,
+            selectedCustomerType,
+            1
+          )
           breakdown.push(`السعر الأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
         } else {
-          const abPricing = zone.abPrices?.[level]
-          basePrice = abPricing?.[size] || 0
-          breakdown.push(`سعر الباقة الأساسي (مستوى ${level}): ${basePrice.toLocaleString()} د.ل`)
+          basePrice = await arabicPricingService.getPrice(
+            size,
+            level,
+            selectedCustomerType,
+            daysInPackage
+          )
+          breakdown.push(`سعر الباقة الأساسي (مستوى ${level} • ${daysInPackage} يوم): ${basePrice.toLocaleString()} د.ل`)
         }
 
         let finalPrice = basePrice
@@ -224,8 +222,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
           breakdown.push(`إجمالي ${daysCount} أيام: ${finalPrice.toLocaleString()} د.ل`)
           dailyRate = basePrice
         } else {
-          const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
-          dailyRate = finalPrice / daysInPackage
+          dailyRate = basePrice > 0 ? basePrice / daysInPackage : 0
           breakdown.push(`السعر اليومي للباقة: ${dailyRate.toFixed(2)} د.ل`)
         }
 
@@ -267,7 +264,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
         totalPrice += finalPrice
         totalDailyRate += dailyRate
-      })
+      }
 
       setMultipleCalculations(calculations)
       setTotalCalculation({
@@ -301,7 +298,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     }
 
     if (calculationMode === 'single' && !calculation) {
-      alert('يرجى إدخال بيانات اللوحة لإنشاء عرض السعر')
+      alert('يرجى ��دخال بيانات اللوحة لإنشاء عرض السعر')
       return
     }
 
