@@ -4,7 +4,8 @@ import Footer from '@/components/Footer'
 import SearchFilters from '@/components/SearchFilters'
 import InteractiveMap from '@/components/InteractiveMap'
 import BillboardCard from '@/components/BillboardCard'
-import SimplifiedPricingCalculator from '@/components/SimplifiedPricingCalculator'
+import EnhancedPricingCalculator from '@/components/EnhancedPricingCalculator'
+import PricingDataManager from '@/components/PricingDataManager'
 import SystemSettings from '@/components/SystemSettings'
 import EnhancedArabicPricingManagement from '@/components/EnhancedArabicPricingManagement'
 import InstallationPricingManagement from '@/components/InstallationPricingManagement'
@@ -31,6 +32,7 @@ export default function MainApp() {
   const [showArabicPricing, setShowArabicPricing] = useState(false)
   const [showInstallationPricing, setShowInstallationPricing] = useState(false)
   const [showCalculator, setShowCalculator] = useState(false)
+  const [showPricingDataManager, setShowPricingDataManager] = useState(false)
   const [showQuoteDialog, setShowQuoteDialog] = useState(false)
 
   // Selection and image preview
@@ -199,6 +201,12 @@ export default function MainApp() {
                   حساب الأسعار
                 </button>
                 <button
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold border-2 border-blue-500"
+                  onClick={() => setShowPricingDataManager(true)}
+                >
+                  إدارة البيانات
+                </button>
+                <button
                   className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold border-2 border-green-500"
                   onClick={() => setShowQuoteDialog(true)}
                   disabled={selectedBillboardIds.length === 0}
@@ -265,11 +273,15 @@ export default function MainApp() {
       )}
 
       {showCalculator && (
-        <SimplifiedPricingCalculator
+        <EnhancedPricingCalculator
           onClose={() => setShowCalculator(false)}
           selectedBillboards={selectedBillboardIds}
           allBillboards={billboards}
         />
+      )}
+
+      {showPricingDataManager && (
+        <PricingDataManager onClose={() => setShowPricingDataManager(false)} />
       )}
 
       {showQuoteDialog && (
