@@ -243,10 +243,12 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
         // Add installation cost if needed
         let totalInstallationCost = 0
-        if (needInstallation && installationCost > 0) {
-          totalInstallationCost = installationCost
-          finalPrice += totalInstallationCost
-          breakdown.push(`تكلفة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
+        if (needInstallation) {
+          totalInstallationCost = installationCosts[billboard.id] || 0
+          if (totalInstallationCost > 0) {
+            finalPrice += totalInstallationCost
+            breakdown.push(`تكلفة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
+          }
         }
 
         // Apply customer discount
@@ -474,7 +476,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
       <div class="footer">
         <p>شكراً لثقتكم في الفارس الذهبي للدعاية والإعلان</p>
-        <p>العرض صالح لمدة 30 يوماً من تاريخ الإصدار</p>
+        <p>ا��عرض صالح لمدة 30 يوماً من تاريخ الإصدار</p>
       </div>
     </body>
     </html>
@@ -1004,7 +1006,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       </div>
                       <div className="flex justify-between">
                         <span>المستوى:</span>
-                        <Badge variant="outline">مستوى {selectedLevel}</Badge>
+                        <Badge variant="outline">مستو�� {selectedLevel}</Badge>
                       </div>
                       <div className="flex justify-between">
                         <span>البلدية:</span>
