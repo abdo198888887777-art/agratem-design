@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { newPricingService } from '@/services/newPricingService'
+import { arabicPricingService } from '@/services/arabicPricingService'
 import { BillboardSize, PriceListType, CustomerType, Billboard } from '@/types'
 
 interface PricingCalculation {
@@ -34,9 +35,15 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
   const [selectedMunicipality, setSelectedMunicipality] = useState<string>('مصراتة')
   const [selectedCustomerType, setSelectedCustomerType] = useState<CustomerType>('individuals')
   const [pricingMode, setPricingMode] = useState<'daily' | 'package'>('daily')
-  const [daysCount, setDaysCount] = useState<number>(1)
+  // Daily mode dates
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  // Package mode start date and duration
+  const [packageStartDate, setPackageStartDate] = useState<string>('')
   const [packageDuration, setPackageDuration] = useState<number>(30)
+  // Installation
   const [installationCost, setInstallationCost] = useState<number>(0)
+  const [installationCosts, setInstallationCosts] = useState<Record<string, number>>({})
   const [needInstallation, setNeedInstallation] = useState<boolean>(false)
   
   // Customer information for quote
@@ -76,6 +83,9 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       const selectedData = allBillboards.filter(billboard => selectedBillboards.includes(billboard.id))
       setSelectedBillboardsData(selectedData)
       setCalculationMode('multiple')
+      // في وضع اللوحات المختارة، اجعل العميل يحدد المدة فقط
+      setPricingMode('package')
+      setSelectedCustomerType('individuals')
 
       // Set default municipality from first selected billboard
       if (selectedData.length > 0) {
@@ -93,50 +103,50 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     } else {
       calculateMultipleBillboards()
     }
-  }, [selectedSize, selectedLevel, selectedMunicipality, selectedCustomerType, pricingMode, daysCount, packageDuration, installationCost, needInstallation, calculationMode, selectedBillboardsData])
+  }, [selectedSize, selectedLevel, selectedMunicipality, selectedCustomerType, pricingMode, startDate, endDate, packageStartDate, packageDuration, installationCost, installationCosts, needInstallation, calculationMode, selectedBillboardsData])
 
-  const calculatePricing = () => {
+  const calculatePricing = async () => {
     try {
-      const pricing = newPricingService.getPricing()
-      const zone = pricing.zones[selectedMunicipality]
-      
-      if (!zone) {
-        console.warn(`المنطقة "${selectedMunicipality}" غير موجودة`)
-        return
-      }
-
       let basePrice = 0
       let breakdown: string[] = []
 
-      // Get base price based on customer type and level
+      // Determine duration in days for Arabic pricing table
+      const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 60 ? 60 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
+
       if (pricingMode === 'daily') {
-        // For daily pricing, use the customer type pricing
-        const customerPricing = zone.prices[selectedCustomerType]
-        basePrice = customerPricing?.[selectedSize] || 0
+        // Use Arabic pricing (يوم واحد) as daily base, multiply by days count
+        basePrice = await arabicPricingService.getPrice(
+          selectedSize,
+          selectedLevel,
+          selectedCustomerType,
+          1
+        )
         breakdown.push(`السعر الأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
       } else {
-        // For package pricing, use AB pricing system
-        const abPricing = zone.abPrices?.[selectedLevel]
-        basePrice = abPricing?.[selectedSize] || 0
-        breakdown.push(`سعر الباقة الأساسي (مستوى ${selectedLevel}): ${basePrice.toLocaleString()} د.ل`)
+        // Use Arabic pricing for the selected package duration
+        basePrice = await arabicPricingService.getPrice(
+          selectedSize,
+          selectedLevel,
+          selectedCustomerType,
+          daysInPackage
+        )
+        breakdown.push(`سعر الباقة الأساسي (مستوى ${selectedLevel} • ${daysInPackage} يوم): ${basePrice.toLocaleString()} د.ل`)
       }
 
-      // Apply municipality multiplier if available
-      const municipalityMultiplier = 1.0 // Default multiplier
-      // Note: Municipality multipliers are handled within the pricing zones now
-      
+      const municipalityMultiplier = 1.0
+
       let finalPrice = basePrice
       let dailyRate = basePrice
 
       if (pricingMode === 'daily') {
-        // For daily pricing, multiply by number of days
-        finalPrice = basePrice * daysCount
-        breakdown.push(`إجمالي ${daysCount} أيام: ${finalPrice.toLocaleString()} د.ل`)
+        const sd = startDate ? new Date(startDate) : null
+        const ed = endDate ? new Date(endDate) : null
+        const numDays = (sd && ed) ? Math.max(Math.ceil((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0) : 0
+        finalPrice = basePrice * numDays
+        breakdown.push(`إجمالي ${numDays} أيام: ${finalPrice.toLocaleString()} د.ل`)
         dailyRate = basePrice
       } else {
-        // For package pricing, calculate daily rate
-        const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
-        dailyRate = finalPrice / daysInPackage
+        dailyRate = basePrice > 0 ? basePrice / daysInPackage : 0
         breakdown.push(`السعر اليومي للباقة: ${dailyRate.toFixed(2)} د.ل`)
       }
 
@@ -156,7 +166,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       } else if (selectedCustomerType === 'marketers') {
         const discount = Math.round(finalPrice * 0.15) // 15% discount for marketers
         finalPrice -= discount
-        breakdown.push(`خصم المسوقين (15%): -${discount.toLocaleString()} د.ل`)
+        breakdown.push(`خصم المسوقي�� (15%): -${discount.toLocaleString()} د.ل`)
       }
 
       breakdown.push(`السعر النهائي: ${finalPrice.toLocaleString()} د.ل`)
@@ -176,7 +186,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     }
   }
 
-  const calculateMultipleBillboards = () => {
+  const calculateMultipleBillboards = async () => {
     try {
       const calculations: Array<{billboard: Billboard, calculation: PricingCalculation}> = []
       let totalPrice = 0
@@ -188,52 +198,57 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         return
       }
 
-      selectedBillboardsData.forEach(billboard => {
+      for (const billboard of selectedBillboardsData) {
         const size = billboard.size as BillboardSize
         const municipality = billboard.municipality || selectedMunicipality
         const level = billboard.level === 'A' ? 'A' : 'B' as PriceListType
 
-        const pricing = newPricingService.getPricing()
-        const zone = pricing.zones[municipality]
-
-        if (!zone) {
-          console.warn(`المنطقة "${municipality}" غير موجودة`)
-          return
-        }
-
         let basePrice = 0
         let breakdown: string[] = []
 
-        // Get base price based on customer type and level
+        const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 60 ? 60 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
+
         if (pricingMode === 'daily') {
-          const customerPricing = zone.prices[selectedCustomerType]
-          basePrice = customerPricing?.[size] || 0
-          breakdown.push(`السعر الأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
+          basePrice = await arabicPricingService.getPrice(
+            size,
+            level,
+            selectedCustomerType,
+            1
+          )
+          breakdown.push(`السعر ��لأساسي اليومي (${selectedCustomerType}): ${basePrice.toLocaleString()} د.ل`)
         } else {
-          const abPricing = zone.abPrices?.[level]
-          basePrice = abPricing?.[size] || 0
-          breakdown.push(`سعر الباقة الأساسي (مستوى ${level}): ${basePrice.toLocaleString()} د.ل`)
+          basePrice = await arabicPricingService.getPrice(
+            size,
+            level,
+            selectedCustomerType,
+            daysInPackage
+          )
+          breakdown.push(`سعر الباقة الأساسي (مستوى ${level} • ${daysInPackage} يوم): ${basePrice.toLocaleString()} د.ل`)
         }
 
         let finalPrice = basePrice
         let dailyRate = basePrice
 
         if (pricingMode === 'daily') {
-          finalPrice = basePrice * daysCount
-          breakdown.push(`إجمالي ${daysCount} أيام: ${finalPrice.toLocaleString()} د.ل`)
+          const sd = startDate ? new Date(startDate) : null
+          const ed = endDate ? new Date(endDate) : null
+          const numDays = (sd && ed) ? Math.max(Math.ceil((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0) : 0
+          finalPrice = basePrice * numDays
+          breakdown.push(`إجمالي ${numDays} أيام: ${finalPrice.toLocaleString()} د.ل`)
           dailyRate = basePrice
         } else {
-          const daysInPackage = packageDuration === 30 ? 30 : packageDuration === 90 ? 90 : packageDuration === 180 ? 180 : 365
-          dailyRate = finalPrice / daysInPackage
+          dailyRate = basePrice > 0 ? basePrice / daysInPackage : 0
           breakdown.push(`السعر اليومي للباقة: ${dailyRate.toFixed(2)} د.ل`)
         }
 
         // Add installation cost if needed
         let totalInstallationCost = 0
-        if (needInstallation && installationCost > 0) {
-          totalInstallationCost = installationCost
-          finalPrice += totalInstallationCost
-          breakdown.push(`تكلفة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
+        if (needInstallation) {
+          totalInstallationCost = installationCosts[billboard.id] || 0
+          if (totalInstallationCost > 0) {
+            finalPrice += totalInstallationCost
+            breakdown.push(`تكلفة التركيب: ${totalInstallationCost.toLocaleString()} د.ل`)
+          }
         }
 
         // Apply customer discount
@@ -266,7 +281,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
         totalPrice += finalPrice
         totalDailyRate += dailyRate
-      })
+      }
 
       setMultipleCalculations(calculations)
       setTotalCalculation({
@@ -300,7 +315,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     }
 
     if (calculationMode === 'single' && !calculation) {
-      alert('يرجى إدخال بيانات اللوحة لإنشاء عرض السعر')
+      alert('يرجى ��دخال بيانات اللوحة لإنشاء عرض السعر')
       return
     }
 
@@ -323,7 +338,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       },
       pricing: {
         mode: pricingMode,
-        days: pricingMode === 'daily' ? daysCount : undefined,
+        days: pricingMode === 'daily' ? (startDate && endDate ? Math.max(Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000*60*60*24)) + 1, 0) : 0) : undefined,
         package: pricingMode === 'package' ? packageDuration : undefined,
         customerType: selectedCustomerType,
         needInstallation,
@@ -372,7 +387,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
     </head>
     <body>
       <div class="header">
-        <div class="company-name">الفا��س الذهبي للدعاية والإعلان</div>
+        <div class="company-name">الفا��س الذهبي للد��اية والإعلان</div>
         <div>AL FARES AL DAHABI</div>
       </div>
 
@@ -391,10 +406,6 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
         <div class="section">
           <div class="section-title">تفاصيل الحملة الإعلانية</div>
           <div class="info-row"><span>عدد اللوحات:</span><span>${data.billing.billboards.length} لوحة</span></div>
-          <div class="info-row"><span>نوع العميل:</span><span>${
-            data.pricing.customerType === 'individuals' ? 'فرد' :
-            data.pricing.customerType === 'companies' ? 'شركة' : 'مسوق'
-          }</span></div>
           <div class="info-row"><span>نوع التسعير:</span><span>${data.pricing.mode === 'daily' ? 'يومي' : 'باقة'}</span></div>
           ${data.pricing.days ? `<div class="info-row"><span>عدد الأيام:</span><span>${data.pricing.days} يوم</span></div>` : ''}
           ${data.pricing.package ? `<div class="info-row"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
@@ -410,7 +421,11 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                 <th>اسم اللوحة</th>
                 <th>الموقع</th>
                 <th>المقاس</th>
+                <th>المستوى</th>
                 <th>البلدية</th>
+                <th>نوع العميل</th>
+                <th>المدة</th>
+                <th>التركيب</th>
                 <th>السعر</th>
               </tr>
             </thead>
@@ -421,7 +436,14 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   <td>${item.billboard.name}</td>
                   <td>${item.billboard.location}</td>
                   <td>${item.billboard.size}</td>
+                  <td>${item.billboard.level}</td>
                   <td>${item.billboard.municipality}</td>
+                  <td>${
+                    data.pricing.customerType === 'individuals' ? 'فرد' :
+                    data.pricing.customerType === 'companies' ? 'شركة' : 'مسوق'
+                  }</td>
+                  <td>${data.pricing.mode === 'daily' ? (data.pricing.days ? data.pricing.days + ' يوم' : '-') : (data.pricing.package ? data.pricing.package + ' يوم' : '-')}</td>
+                  <td>${item.calculation.installationCost ? formatPrice(item.calculation.installationCost) : '-'}</td>
                   <td class="billboard-price">${formatPrice(item.calculation.finalPrice)}</td>
                 </tr>
               `).join('')}
@@ -442,13 +464,14 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
           <div class="info-row"><span>المقاس:</span><span>${data.billing.billboard.size}</span></div>
           <div class="info-row"><span>المستوى:</span><span>${data.billing.billboard.level}</span></div>
           <div class="info-row"><span>البلدية:</span><span>${data.billing.billboard.municipality}</span></div>
-          <div class="info-row"><span>نوع العميل:</span><span>${
+          <div class="info-row"><span>نوع ال��ميل:</span><span>${
             data.billing.billboard.customerType === 'individuals' ? 'فرد' :
             data.billing.billboard.customerType === 'companies' ? 'شركة' : 'مسوق'
           }</span></div>
           <div class="info-row"><span>نوع التسعير:</span><span>${data.pricing.mode === 'daily' ? 'يومي' : 'باقة'}</span></div>
           ${data.pricing.days ? `<div class="info-row"><span>عدد الأيام:</span><span>${data.pricing.days} يوم</span></div>` : ''}
-          ${data.pricing.package ? `<div class="info-row"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
+          ${data.pricing.package ? `<div class=\"info-row\"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
+          ${data.pricing.needInstallation && data.pricing.installationCost ? `<div class=\"info-row\"><span>تكلفة التركيب:</span><span>${formatPrice(data.pricing.installationCost)}</span></div>` : ''}
         </div>
 
         <div class="section">
@@ -465,7 +488,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
       <div class="footer">
         <p>شكراً لثقتكم في الفارس الذهبي للدعاية والإعلان</p>
-        <p>العرض صالح لمدة 30 يوماً من تاريخ الإصدار</p>
+        <p>ا��عرض صالح لمدة 30 يوماً من تاريخ الإصدار</p>
       </div>
     </body>
     </html>
@@ -500,7 +523,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
               size="sm"
               className="bg-white/20 border-white/30 text-white hover:bg-white/30"
             >
-              إغلاق
+              إ��لاق
             </Button>
           </div>
         </div>
@@ -607,7 +630,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     >
                       <div className="text-center">
                         <List className="w-6 h-6 mx-auto mb-2" />
-                        <div className="font-bold">اللوحات المختارة</div>
+                        <div className="font-bold">اللو��ات المختارة</div>
                         <div className="text-xs opacity-75">{selectedBillboardsData.length} لوحة</div>
                       </div>
                     </Button>
@@ -622,13 +645,14 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       <div className="text-center">
                         <Calculator className="w-6 h-6 mx-auto mb-2" />
                         <div className="font-bold">حساب منفرد</div>
-                        <div className="text-xs opacity-75">لوحة واحدة</div>
+                        <div className="text-xs opacity-75">لو��ة واحدة</div>
                       </div>
                     </Button>
                   </div>
                 </Card>
               )}
-              {/* Pricing Mode Selection */}
+              {/* Pricing Mode Selection (single mode only) */}
+              {calculationMode === 'single' && (
               <Card className="p-4">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-emerald-600" />
@@ -665,6 +689,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   </Button>
                 </div>
               </Card>
+              )}
 
               {/* Billboard Specifications */}
               <Card className="p-4">
@@ -740,29 +765,36 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   المدة الزمنية
                 </h3>
                 {pricingMode === 'daily' ? (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">عدد الأيام</label>
-                    <Input
-                      type="number"
-                      value={daysCount}
-                      onChange={(e) => setDaysCount(parseInt(e.target.value) || 1)}
-                      min="1"
-                      className="w-full"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ البداية</label>
+                      <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ النهاية</label>
+                      <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                    </div>
                   </div>
                 ) : (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">نوع الباقة</label>
-                    <select
-                      value={packageDuration}
-                      onChange={(e) => setPackageDuration(parseInt(e.target.value))}
-                      className="w-full p-2 border border-gray-300 rounded-lg"
-                    >
-                      <option value={30}>شهر واحد</option>
-                      <option value={90}>3 أشهر</option>
-                      <option value={180}>6 أشهر</option>
-                      <option value={365}>سنة كاملة</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">نوع الباقة</label>
+                      <select
+                        value={packageDuration}
+                        onChange={(e) => setPackageDuration(parseInt(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value={30}>شهر واحد</option>
+                        <option value={60}>2 ��شهر</option>
+                        <option value={90}>3 أشهر</option>
+                        <option value={180}>6 أشهر</option>
+                        <option value={365}>سنة كاملة</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ البدء</label>
+                      <Input type="date" value={packageStartDate} onChange={(e) => setPackageStartDate(e.target.value)} />
+                    </div>
                   </div>
                 )}
               </Card>
@@ -862,7 +894,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                               </div>
                               <div>
                                 <div className="font-semibold text-gray-900 text-sm">{billboard.name}</div>
-                                <div className="text-xs text-gray-600">{billboard.size} • {billboard.municipality}</div>
+                                <div className="text-xs text-gray-600">{billboard.size} • {billboard.municipality} • مستوى {billboard.level}</div>
                               </div>
                             </div>
                             <div className="text-right">
@@ -870,6 +902,17 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                               <div className="text-xs text-blue-600">يومي: {formatPrice(calculation.dailyRate)}</div>
                             </div>
                           </div>
+                          {needInstallation && (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <div className="text-xs text-gray-600">سعر التركيب (لهذه اللوحة):</div>
+                              <Input
+                                type="number"
+                                value={installationCosts[billboard.id] ?? 0}
+                                onChange={(e) => setInstallationCosts(prev => ({ ...prev, [billboard.id]: parseInt(e.target.value) || 0 }))}
+                                min={0}
+                              />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -881,16 +924,16 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       <div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center">
                         <Calculator className="w-6 h-6 text-white" />
                       </div>
-                      الإجمالي النهائي
+                      الإجمالي ا��نهائي
                     </h3>
 
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
-                        <span className="text-gray-700">عدد اللوحات</span>
+                        <span className="text-gray-700">��دد اللوحات</span>
                         <span className="font-bold text-emerald-700">{totalCalculation.count} لوحة</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
-                        <span className="text-gray-700">إجمالي السعر</span>
+                        <span className="text-gray-700">إجمالي الس��ر</span>
                         <span className="font-bold text-emerald-700">{formatPrice(totalCalculation.totalPrice)}</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
@@ -903,7 +946,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       <div className="text-sm opacity-90 mb-2">إجمالي الحملة الإعلانية</div>
                       <div className="text-3xl font-black">{formatPrice(totalCalculation.totalPrice)}</div>
                       <div className="text-sm opacity-90 mt-2">
-                        لـ {totalCalculation.count} لوحة • متوسط يومي: {formatPrice(totalCalculation.totalDailyRate)}
+                        ل�� {totalCalculation.count} لوحة • متوسط يومي: {formatPrice(totalCalculation.totalDailyRate)}
                       </div>
                     </div>
                   </Card>
@@ -946,13 +989,13 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
               <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
                 <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  ملخص العرض
+                  م��خص العرض
                 </h3>
                 <div className="space-y-2 text-sm">
                   {calculationMode === 'multiple' ? (
                     <>
                       <div className="flex justify-between">
-                        <span>عدد اللوحات:</span>
+                        <span>عدد الل��حات:</span>
                         <Badge variant="outline" className="bg-blue-100 text-blue-800">
                           {selectedBillboardsData.length} ��وحة
                         </Badge>
@@ -986,7 +1029,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       </div>
                       <div className="flex justify-between">
                         <span>المستوى:</span>
-                        <Badge variant="outline">مستوى {selectedLevel}</Badge>
+                        <Badge variant="outline">مستو�� {selectedLevel}</Badge>
                       </div>
                       <div className="flex justify-between">
                         <span>البلدية:</span>
@@ -994,26 +1037,37 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                       </div>
                     </>
                   )}
-                  <div className="flex justify-between">
-                    <span>نوع العميل:</span>
-                    <Badge variant="outline" className={
-                      selectedCustomerType === 'companies' ? 'bg-green-100 text-green-800' :
-                      selectedCustomerType === 'marketers' ? 'bg-blue-100 text-blue-800' :
-                      'bg-purple-100 text-purple-800'
-                    }>
-                      {selectedCustomerType === 'individuals' ? 'فرد' :
-                       selectedCustomerType === 'companies' ? 'شركة' : 'مسوق'}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>نوع التسعير:</span>
-                    <Badge variant="outline">{pricingMode === 'daily' ? 'يومي' : 'باقة'}</Badge>
-                  </div>
-                  {pricingMode === 'daily' && (
+                  {calculationMode === 'single' && (
+                    <>
                     <div className="flex justify-between">
-                      <span>عدد الأيام:</span>
-                      <Badge variant="outline">{daysCount} يوم</Badge>
+                      <span>نوع العميل:</span>
+                      <Badge variant="outline" className={
+                        selectedCustomerType === 'companies' ? 'bg-green-100 text-green-800' :
+                        selectedCustomerType === 'marketers' ? 'bg-blue-100 text-blue-800' :
+                        'bg-purple-100 text-purple-800'
+                      }>
+                        {selectedCustomerType === 'individuals' ? 'فرد' :
+                         selectedCustomerType === 'companies' ? 'شركة' : 'مسوق'}
+                      </Badge>
                     </div>
+                    <div className="flex justify-between">
+                      <span>نوع التسعير:</span>
+                      <Badge variant="outline">{pricingMode === 'daily' ? 'يومي' : 'باقة'}</Badge>
+                    </div>
+                    </>
+                  )}
+                  {pricingMode === 'daily' && (
+                    (() => {
+                      const sd = startDate ? new Date(startDate) : null
+                      const ed = endDate ? new Date(endDate) : null
+                      const numDays = (sd && ed) ? Math.max(Math.ceil((ed.getTime() - sd.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0) : 0
+                      return (
+                        <div className="flex justify-between">
+                          <span>عدد الأيام:</span>
+                          <Badge variant="outline">{numDays} يوم</Badge>
+                        </div>
+                      )
+                    })()
                   )}
                   {pricingMode === 'package' && (
                     <div className="flex justify-between">
@@ -1061,7 +1115,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         total: totalCalculation,
                         customerType: selectedCustomerType,
                         pricingMode: pricingMode,
-                        days: pricingMode === 'daily' ? daysCount : undefined,
+                        days: pricingMode === 'daily' ? (startDate && endDate ? Math.max(Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000*60*60*24)) + 1, 0) : 0) : undefined,
                         package: pricingMode === 'package' ? packageDuration : undefined
                       } : {
                         mode: 'single',
@@ -1070,7 +1124,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         municipality: selectedMunicipality,
                         customerType: selectedCustomerType,
                         pricingMode: pricingMode,
-                        days: pricingMode === 'daily' ? daysCount : undefined,
+                        days: pricingMode === 'daily' ? (startDate && endDate ? Math.max(Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000*60*60*24)) + 1, 0) : 0) : undefined,
                         package: pricingMode === 'package' ? packageDuration : undefined,
                         calculation
                       }
@@ -1081,7 +1135,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                     className="w-full"
                   >
                     <Download className="w-5 h-5 ml-2" />
-                    نسخ البيانات
+                    نسخ ا��بيانات
                   </Button>
                 </div>
               </Card>
