@@ -305,7 +305,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
 
   const generateQuote = () => {
     if (!customerInfo.name) {
-      alert('يرجى ملء معلومات العميل لإنشاء عرض السعر')
+      alert('يرجى ملء معلوما�� العميل لإنشاء عرض السعر')
       return
     }
 
@@ -421,7 +421,11 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                 <th>اسم اللوحة</th>
                 <th>الموقع</th>
                 <th>المقاس</th>
+                <th>المستوى</th>
                 <th>البلدية</th>
+                <th>نوع العميل</th>
+                <th>المدة</th>
+                <th>التركيب</th>
                 <th>السعر</th>
               </tr>
             </thead>
@@ -432,7 +436,14 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                   <td>${item.billboard.name}</td>
                   <td>${item.billboard.location}</td>
                   <td>${item.billboard.size}</td>
+                  <td>${item.billboard.level}</td>
                   <td>${item.billboard.municipality}</td>
+                  <td>${
+                    data.pricing.customerType === 'individuals' ? 'فرد' :
+                    data.pricing.customerType === 'companies' ? 'شركة' : 'مسوق'
+                  }</td>
+                  <td>${data.pricing.mode === 'daily' ? (data.pricing.days ? data.pricing.days + ' يوم' : '-') : (data.pricing.package ? data.pricing.package + ' يوم' : '-')}</td>
+                  <td>${item.calculation.installationCost ? '${formatPrice(item.calculation.installationCost)}' : '-'}</td>
                   <td class="billboard-price">${formatPrice(item.calculation.finalPrice)}</td>
                 </tr>
               `).join('')}
@@ -459,7 +470,8 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
           }</span></div>
           <div class="info-row"><span>نوع التسعير:</span><span>${data.pricing.mode === 'daily' ? 'يومي' : 'باقة'}</span></div>
           ${data.pricing.days ? `<div class="info-row"><span>عدد الأيام:</span><span>${data.pricing.days} يوم</span></div>` : ''}
-          ${data.pricing.package ? `<div class="info-row"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
+          ${data.pricing.package ? `<div class=\"info-row\"><span>مدة الباقة:</span><span>${data.pricing.package} يوم</span></div>` : ''}
+          ${data.pricing.needInstallation && data.pricing.installationCost ? `<div class=\"info-row\"><span>تكلفة التركيب:</span><span>${formatPrice(data.pricing.installationCost)}</span></div>` : ''}
         </div>
 
         <div class="section">
@@ -526,7 +538,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                 </div>
                 <h3 className="text-xl font-bold text-yellow-900 mb-2">لا توجد لوحات مختارة</h3>
                 <p className="text-yellow-800 mb-4">
-                  لاستخدام هذه الميزة، يرجى اختيار لوحات من الصفحة الرئيسية أولاً، ثم الضغط على "حساب الأسعار"
+                  لاستخدام هذه الميزة، يرجى اختيار لوحا�� من الصفحة الرئيسية أولاً، ثم الضغط على "حساب الأسعار"
                 </p>
                 <Button
                   onClick={() => setCalculationMode('single')}
