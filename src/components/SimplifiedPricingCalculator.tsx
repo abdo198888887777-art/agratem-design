@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { newPricingService } from '@/services/newPricingService'
+import { arabicPricingService } from '@/services/arabicPricingService'
 import { BillboardSize, PriceListType, CustomerType, Billboard } from '@/types'
 
 interface PricingCalculation {
