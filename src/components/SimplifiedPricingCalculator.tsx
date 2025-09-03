@@ -338,7 +338,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
       },
       pricing: {
         mode: pricingMode,
-        days: pricingMode === 'daily' ? daysCount : undefined,
+        days: pricingMode === 'daily' ? (startDate && endDate ? Math.max(Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000*60*60*24)) + 1, 0) : 0) : undefined,
         package: pricingMode === 'package' ? packageDuration : undefined,
         customerType: selectedCustomerType,
         needInstallation,
@@ -921,7 +921,7 @@ const SimplifiedPricingCalculator: React.FC<SimplifiedPricingCalculatorProps> = 
                         <span className="font-bold text-emerald-700">{totalCalculation.count} لوحة</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
-                        <span className="text-gray-700">إجمالي السعر</span>
+                        <span className="text-gray-700">إجمالي الس��ر</span>
                         <span className="font-bold text-emerald-700">{formatPrice(totalCalculation.totalPrice)}</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
